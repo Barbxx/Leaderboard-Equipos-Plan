@@ -1,34 +1,32 @@
 // 1. BASE DE DATOS DE EQUIPOS
-const defaultEquipos = [
-    { id: '1', nombre: 'VERDE', puntos: 900, color1: '#06de31ff', color2: '#02c529ff' },
-    { id: '2', nombre: 'AZUL', puntos: 850, color1: '#00c3ff', color2: '#046cd3ff' },
-    { id: '3', nombre: 'AMARILLO', puntos: 600, color1: '#eeff00ff', color2: '#99a308ff' },
-    { id: '4', nombre: 'NARANJA', puntos: 500, color1: '#ff6a00ff', color2: '#cc2900' },
-    { id: '5', nombre: 'ROJO', puntos: 350, color1: '#ff0000', color2: '#990000' },
-    { id: '6', nombre: 'MORADO', puntos: 300, color1: '#8a2be2', color2: '#4b0082' },
-    { id: '7', nombre: 'ROSA', puntos: 250, color1: '#ff1493', color2: '#9e0255ff' }
-];
+const supabaseUrl = 'https://yzddjejnawqpxqvqdrhm.supabase.co';
+const supabaseKey = 'sb_publishable_c0tg7B54QIOs6y9VW10PJw_sx8e9RSK';
+const db = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Cargar desde localStorage si existe, si no, usar los por defecto
-let equipos = JSON.parse(localStorage.getItem('cimosEquipos')) || defaultEquipos;
+// Array local (se llena al cargar desde Supabase)
+let equipos = [];
 
-// Función para guardar los cambios permanentemente
-function guardarDatos() {
-    localStorage.setItem('cimosEquipos', JSON.stringify(equipos));
+// ── CARGAR todos los equipos desde Supabase ──────────────────────────────────
+async function cargarDatos() {
+    const { data, error } = await db.from('equipos').select('*').order('puntos', { ascending: false });
+    if (error) { console.error('Error cargando equipos:', error); return; }
+    equipos = data;
+    construirControles();
+    actualizarPantalla();
 }
 
-// Función para cargar los datos desde localStorage
-function cargarDatos() {
-    const guardados = localStorage.getItem('cimosEquipos');
-    if (guardados) {
-        equipos = JSON.parse(guardados);
-    }
+// ── GUARDAR un campo de un equipo en Supabase ─────────────────────────────────
+async function guardarDato(id, campos) {
+    const { error } = await db.from('equipos').update(campos).eq('id', id);
+    if (error) console.error('Error guardando dato:', error);
 }
 
 
-// Generador de ID único
-function generarId() {
-    return Math.random().toString(36).substr(2, 9);
+// Helper: normaliza colores de 8 dígitos (#RRGGBBAA) a 6 (#RRGGBB)
+// El input type="color" solo acepta 6 dígitos
+function normalizarColor(color) {
+    if (!color) return '#000000';
+    return color.length === 9 ? color.slice(0, 7) : color;
 }
 
 
@@ -78,14 +76,12 @@ function actualizarPantalla() {
     // Ordenar por puntos (mayor a menor)
     equipos.sort((a, b) => b.puntos - a.puntos);
 
-    // Calcular posiciones con empates
-    let posicionActual = 1;
-    let puntosAnteriores = -1;
-    let equiposProcesados = 0;
-    equipos.forEach((equipo, index) => {
-        equiposProcesados++;
-        if (index > 0 && equipo.puntos < puntosAnteriores) {
-            posicionActual = equiposProcesados;
+    // Calcular posiciones con empates (dense ranking: sin saltos numéricos)
+    let posicionActual = 0;
+    let puntosAnteriores = null;
+    equipos.forEach((equipo) => {
+        if (equipo.puntos !== puntosAnteriores) {
+            posicionActual++;
         }
         equipo.posicionCalculada = posicionActual;
         puntosAnteriores = equipo.puntos;
@@ -320,8 +316,8 @@ function construirControles() {
         div.innerHTML = `
             <div class="control-fila">
                 <input type="text" value="${equipo.nombre}" onchange="actualizarDato('${equipo.id}', 'nombre', this.value)" placeholder="Nombre">
-                <input type="color" value="${equipo.color1}" onchange="actualizarDato('${equipo.id}', 'color1', this.value)" title="Color Izquierdo">
-                <input type="color" value="${equipo.color2}" onchange="actualizarDato('${equipo.id}', 'color2', this.value)" title="Color Derecho">
+                <input type="color" value="${normalizarColor(equipo.color1)}" onchange="actualizarDato('${equipo.id}', 'color1', this.value)" title="Color Izquierdo">
+                <input type="color" value="${normalizarColor(equipo.color2)}" onchange="actualizarDato('${equipo.id}', 'color2', this.value)" title="Color Derecho">
             </div>
             <div class="fila-pts">
                 <span class="pts-display">${equipo.puntos} pts</span>
@@ -338,64 +334,73 @@ function construirControles() {
 }
 
 // 5. FUNCIONES INTERACTIVAS
-window.modificarPuntosCustom = function(id, signo) {
+window.modificarPuntosCustom = async function(id, signo) {
     const inputCantidad = document.getElementById('cantidad-' + id);
     const cantidad = parseInt(inputCantidad.value) || 0;
     let equipo = equipos.find(e => e.id === id);
-    if(equipo && cantidad > 0) {
-        equipo.puntos += signo * cantidad;
-        if (equipo.puntos < 0) equipo.puntos = 0; // No permitir puntos negativos
-        guardarDatos();
+    if (equipo && cantidad > 0) {
+        const nuevosPuntos = Math.max(0, equipo.puntos + signo * cantidad);
+        equipo.puntos = nuevosPuntos;
+        await guardarDato(id, { puntos: nuevosPuntos });
         construirControles();
+        actualizarPantalla();
     }
 }
 
 // Alias para compatibilidad (agregarEquipo usa esto)
 window.modificarPuntos = window.modificarPuntosCustom;
 
-window.actualizarDato = function(id, campo, valor) {
+window.actualizarDato = async function(id, campo, valor) {
     let equipo = equipos.find(e => e.id === id);
-    if(equipo) {
+    if (equipo) {
         equipo[campo] = valor;
-        guardarDatos();
-        if(campo === 'color1' || campo === 'color2') {
+        await guardarDato(id, { [campo]: valor });
+        if (campo === 'color1' || campo === 'color2') {
             construirControles();
         }
         // NO actualizamos la pantalla todavía → se ve al cerrar el panel
     }
 }
 
-window.agregarEquipo = function() {
+window.agregarEquipo = async function() {
     const nuevoEquipo = {
-        id: generarId(),
         nombre: 'NUEVO EQUIPO',
         puntos: 0,
         color1: '#777777',
         color2: '#333333'
     };
-    equipos.push(nuevoEquipo);
-    guardarDatos();
+    const { data, error } = await db.from('equipos').insert(nuevoEquipo).select().single();
+    if (error) { console.error('Error agregando equipo:', error); return; }
+    equipos.push(data);
     construirControles();
-    actualizarPantalla(); // Al agregar sí se muestra inmediatamente
-    
+    actualizarPantalla();
+
     setTimeout(() => {
         const panel = document.getElementById('panel-control');
         panel.scrollTop = panel.scrollHeight;
     }, 100);
 }
 
-window.eliminarEquipo = function(id) {
-    if(confirm("¿Seguro que deseas eliminar este equipo?")) {
+window.eliminarEquipo = async function(id) {
+    if (confirm('¿Seguro que deseas eliminar este equipo?')) {
+        const { error } = await db.from('equipos').delete().eq('id', id);
+        if (error) { console.error('Error eliminando equipo:', error); return; }
         equipos = equipos.filter(e => e.id !== id);
-        guardarDatos();
         construirControles();
         actualizarPantalla();
     }
 }
 
-// 6. INICIALIZACIÓN
-construirControles();
-actualizarPantalla();
+// 6. INICIALIZACIÓN: cargamos datos desde Supabase
+cargarDatos();
+
+// Suscripción en tiempo real: actualiza la pantalla automáticamente
+// cuando otro dispositivo/pestaña cambia datos en Supabase
+db.channel('equipos-cambios')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'equipos' }, () => {
+        cargarDatos();
+    })
+    .subscribe();
 
 // SVGs para el botón de panel
 const SVG_PANEL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
@@ -427,14 +432,15 @@ window.togglePanel = function() {
     }
 }
 
-// 8. REINICIAR TORNEO
-window.reiniciarTorneo = function() {
-    if(confirm('⚠️ ¿Seguro que quieres reiniciar el torneo?\nTodos los puntos y cambios se perderán.')) {
-        // Hacer una copia profunda de los valores por defecto
-        equipos = JSON.parse(JSON.stringify(defaultEquipos));
-        guardarDatos();
-        construirControles();
-        actualizarPantalla();
+// 8. REINICIAR TORNEO (pone todos los puntos a 0)
+window.reiniciarTorneo = async function() {
+    if (confirm('⚠️ ¿Seguro que quieres reiniciar el torneo?\nTodos los puntos se pondrán en 0.')) {
+        // Poner puntos a 0 en Supabase para todos los equipos
+        const updates = equipos.map(e =>
+            db.from('equipos').update({ puntos: 0 }).eq('id', e.id)
+        );
+        await Promise.all(updates);
+        await cargarDatos();
     }
 }
 
@@ -500,23 +506,15 @@ window.cambiarEscena = function(escenaId) {
     if (btnActivo) btnActivo.classList.add('activo');
 }
 
-// 10. SINCRONIZACIÓN ENTRE PESTAÑAS (Para múltiples pantallas HTML)
+// 10. SINCRONIZACIÓN DEL TELÓN ENTRE PESTAÑAS (localStorage sigue siendo suficiente para esto)
 window.addEventListener('storage', function(e) {
-    if (e.key === 'planCimos_equipos') {
-        cargarDatos();
-        // Si estamos en la pantalla de leaderboard (que tiene la lista y podio)
-        if (document.getElementById('lista-equipos')) {
-            construirControles();
-            actualizarPantalla();
-        }
-    } else if (e.key === 'planCimos_telon') {
+    if (e.key === 'planCimos_telon') {
         const telon = document.getElementById('telon');
         if (telon) {
             const debeEstarOculto = e.newValue === 'oculto';
             const estaOculto = telon.classList.contains('telon-oculto');
-            
             if (debeEstarOculto !== estaOculto) {
-                window.toggleTelon(true); // true indica que viene de sync
+                window.toggleTelon(true);
             }
         }
     }
