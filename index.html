@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="">
+    <title>Leaderboard Plan Cimos 2026</title>
+    <!-- Favicon para la pestaña del navegador -->
+    <link rel="icon" href="assets/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- BOTÓN FLOTANTE: Abrir/Cerrar Panel (arriba izquierda) -->
+    <button id="btn-toggle-panel" class="btn-flotante" onclick="togglePanel()" title="Panel de Control">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+
+    <!-- BOTÓN FLOTANTE: Telón (Abajo del Panel de Control) -->
+    <button id="btn-flotante-telon" class="btn-flotante" onclick="toggleTelon()" title="Tapar Pantalla (Telón)" style="top: 80px; left: 15px; font-size: 24px;">
+        🎭
+    </button>
+
+    <!-- BOTÓN FLOTANTE: Vistas (Lista / Podio) - Ahora abajo de los de animar -->
+    <div class="dropdown-vistas" id="dropdown-vistas-container">
+        <button id="btn-vistas" class="btn-flotante" onclick="toggleDropdownVistas()" title="Cambiar Vista">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+        <div id="menu-vistas" class="menu-vistas-oculto">
+            <button onclick="cambiarVista('lista')">Vista Lista</button>
+            <button onclick="cambiarVista('podio')">Vista Podio</button>
+        </div>
+    </div>
+
+    <!-- BOTONES DE ANIMACIÓN PARA LISTA -->
+    <div id="controles-animacion-lista">
+        <!-- Lineal -->
+        <button id="btn-animar-lineal" class="btn-flotante" onclick="animacionLineal()" title="Animación Lineal">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </button>
+
+        <!-- Dramática -->
+        <button id="btn-animar-flotante" class="btn-flotante" onclick="revelacionDramatica()" title="Animar de Nuevo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- BOTÓN DE ANIMACIÓN PARA PODIO -->
+    <div id="controles-animacion-podio" style="display: none;">
+        <button id="btn-animar-podio" class="btn-flotante" onclick="animarPodio()" title="Animar Podio">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+        </button>
+    </div>
+
+    <!-- BARRA SUPERIOR DE CONTROLES (Escenas) -->
+    <div class="barra-controles-flotante">
+        <div class="grupo-botones">
+            <button id="btn-escena-logo" onclick="window.location.href='logo.html'">🖼️ Logo</button>
+            <button id="btn-escena-video" onclick="window.location.href='video.html'">📺 Video Intro</button>
+            <button id="btn-escena-mapa" onclick="window.location.href='mapa.html'">🗺️ Mapa</button>
+            <button id="btn-escena-leaderboard" onclick="window.location.href='index.html'" class="activo">🏆 Posiciones</button>
+        </div>
+    </div>
+
+    <!-- PANEL DE CONTROL (empieza oculto) -->
+    <div id="panel-control" class="panel-oculto">
+        <h2>Panel de Control</h2>
+
+        <button class="btn-agregar" onclick="agregarEquipo()">+ Agregar Equipo</button>
+        <button class="btn-reiniciar" onclick="reiniciarTorneo()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+            </svg>
+            Reiniciar Torneo
+        </button>
+        <hr style="width: 100%; border: 1px solid #ddd; margin: 0;">
+        <div id="controles-contenedor"></div>
+    </div>
+
+    <!-- ESCENARIO PRINCIPAL -->
+    <div id="escenario">
+        
+        <!-- Telón del Misterio - usa la pantalla de logo sin texto -->
+        <div id="telon" class="telon-oculto">
+            <div class="telon-logo-pantalla">
+                <img src="assets/logo.png" alt="Logo" class="telon-logo-img">
+                <!-- Particulas decorativas -->
+                <div class="telon-particula" style="--x:15%;--y:20%;--s:1.2;--d:0s"></div>
+                <div class="telon-particula" style="--x:80%;--y:70%;--s:0.8;--d:1.5s"></div>
+                <div class="telon-particula" style="--x:60%;--y:10%;--s:1;--d:0.8s"></div>
+                <div class="telon-particula" style="--x:30%;--y:85%;--s:0.6;--d:2s"></div>
+                <div class="telon-particula" style="--x:90%;--y:30%;--s:1.1;--d:0.3s"></div>
+            </div>
+        </div>
+
+        <!-- Escena: Leaderboard (La vista original) -->
+        <div id="escena-leaderboard" class="escena">
+            <div id="pantalla-visualizacion">
+                <div class="tabla-contenedor" id="vista-lista">
+                    <div class="encabezados">
+                        <span class="enc-pos">POSICIÓN</span>
+                        <span class="enc-equipo">EQUIPOS</span>
+                        <span class="enc-puntos">PUNTOS</span>
+                    </div>
+                    <ul id="lista-equipos"></ul>
+                </div>
+                
+                <div id="vista-podio" class="podio-contenedor" style="display: none;">
+                    <!-- El podio se genera dinámicamente aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&lt;&gt; by <b>Bárbara García</b> 2026</p>
+    </footer>
+
+    <!-- POPUP DETALLE DE EQUIPO (oculto por defecto, activado por JS al hacer click en una fila) -->
+    <div id="popup-equipo" style="display:none;" onclick="this.style.display='none'">
+        <div class="popup-inner" id="popup-inner-contenido">
+            <div class="popup-pos" id="popup-pos-val">1</div>
+            <div class="popup-nombre" id="popup-nombre-val">Equipo</div>
+            <div class="popup-pts" id="popup-pts-val">700pts</div>
+        </div>
+    </div>
+
+    <script src="functions.js"></script>
+</body>
+</html>
