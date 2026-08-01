@@ -131,6 +131,17 @@ function renderizarPodio() {
         const wrapper = document.createElement('div');
         wrapper.className = `podio-wrapper ${clasesPodio[index].replace('podio-', 'wrapper-')}`;
 
+        // Controlar visibilidad inicial basada en podioStep
+        const isVisible = 
+            (index === 2 && podioStep >= 1) || 
+            (index === 0 && podioStep >= 2) || 
+            (index === 1 && podioStep >= 3);
+            
+        if (!isVisible) {
+            wrapper.style.opacity = '0';
+            wrapper.style.visibility = 'hidden';
+        }
+
         // Etiqueta FUERA de la barra (arriba)
         const etq = document.createElement('div');
         etq.className = 'p-etiqueta';
@@ -212,11 +223,18 @@ window.resetearPodio = function() {
     podioStep = 0;
     const contenedorPodio = document.getElementById('vista-podio');
     if (!contenedorPodio) return;
-    // Las barras son los .podio-lugar dentro de cada wrapper
-    contenedorPodio.querySelectorAll('.podio-lugar').forEach(col => {
-        col.classList.remove('podio-animando');
-        col.style.transform = 'translateY(200%)';
-        col.style.transition = 'none';
+    // Ocultar los wrappers enteros para que el podio inicie en blanco
+    contenedorPodio.querySelectorAll('.podio-wrapper').forEach(w => {
+        w.style.opacity = '0';
+        w.style.visibility = 'hidden';
+        w.style.transition = 'none';
+        
+        const col = w.querySelector('.podio-lugar');
+        if (col) {
+            col.classList.remove('podio-animando');
+            col.style.transform = 'translateY(200%)';
+            col.style.transition = 'none';
+        }
     });
 }
 
@@ -229,32 +247,46 @@ window.animarPodio = function() {
     const ordenPorStep = [2, 0, 1];
 
     if (podioStep === 0) {
-        wrappers.forEach(w => {
-            const col = w.querySelector('.podio-lugar');
-            if (col) {
-                col.classList.remove('podio-animando');
-                col.style.transform = 'translateY(200%)';
-                col.style.transition = 'none';
-            }
-        });
         podioStep = 1;
-        setTimeout(() => window.animarPodio(), 80);
+    }
+
+    // 4to clic: Explosión de confetti
+    if (podioStep === 4) {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 200,
+                spread: 120,
+                origin: { y: 0.5, x: 0.5 },
+                colors: ['#FFD700', '#FF8C00', '#FF0080', '#00FF00', '#00BFFF', '#FFFFFF'],
+                startVelocity: 50,
+                gravity: 0.8,
+                ticks: 300
+            });
+        }
+        podioStep++;
         return;
     }
 
-    if (podioStep > 3) {
+    if (podioStep > 4) {
         window.resetearPodio();
         return;
     }
 
     const domIndex = ordenPorStep[podioStep - 1];
-    const col = wrappers[domIndex] ? wrappers[domIndex].querySelector('.podio-lugar') : null;
-    if (col) {
-        col.style.transition = '';
-        col.style.transform = '';
-        col.style.setProperty('--dur', '1s');
-        col.style.animationDelay = '0ms';
-        col.classList.add('podio-animando');
+    const wrapper = wrappers[domIndex];
+    if (wrapper) {
+        wrapper.style.opacity = '1';
+        wrapper.style.visibility = 'visible';
+        wrapper.style.transition = 'opacity 0.4s ease';
+        
+        const col = wrapper.querySelector('.podio-lugar');
+        if (col) {
+            col.style.transition = '';
+            col.style.transform = '';
+            col.style.setProperty('--dur', '1s');
+            col.style.animationDelay = '0ms';
+            col.classList.add('podio-animando');
+        }
     }
 
     podioStep++;
