@@ -396,6 +396,7 @@ window.actualizarDato = async function(id, campo, valor) {
 
 window.agregarEquipo = async function() {
     const nuevoEquipo = {
+        id: crypto.randomUUID(),
         nombre: 'NUEVO EQUIPO',
         puntos: 0,
         color1: '#777777',
