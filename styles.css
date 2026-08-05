@@ -633,7 +633,7 @@ body {
     padding-bottom: 20px;
     border: 3px solid rgba(255, 255, 255, 0.6);
     border-bottom: none;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .podio-lugar .p-decoracion {
@@ -661,13 +661,14 @@ body {
 }
 
 .podio-lugar .p-nom {
-    font-size: clamp(16px, 2vw, 30px);
+    font-size: clamp(14px, 1.6vw, 24px);
     text-align: center;
     -webkit-text-stroke: 1.5px rgba(0,0,0,0.5);
     text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
     margin-bottom: 8px;
     word-break: break-word;
     padding: 0 10px;
+    line-height: 1.1;
 }
 
 .podio-lugar .p-pts {
