@@ -77,6 +77,15 @@
         </div>
     </div>
 
+    <!-- BOTÓN INFO PUNTOS (Debajo de la barra de escenas) -->
+    <button onclick="abrirModalPuntos()" id="btn-flotante-info" class="btn-flotante btn-flotante-info" title="Información de Puntos">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+    </button>
+
     <!-- PANEL DE CONTROL (empieza oculto) -->
     <div id="panel-control" class="panel-oculto">
         <h2>Panel de Control</h2>
@@ -131,6 +140,23 @@
     <footer>
         <p>&lt;&gt; by <b>Bárbara García</b> 2026</p>
     </footer>
+
+    <!-- MODAL REGLAS DE PUNTOS -->
+    <div id="modal-puntos" class="modal-oculto" onclick="cerrarModalPuntos()">
+        <div class="modal-contenido" onclick="event.stopPropagation()">
+            <span class="cerrar-modal" onclick="cerrarModalPuntos()">&times;</span>
+            <h2>Tabla de Puntuación</h2>
+            <ul>
+                <li>El primero que adivine el lugar: <b>20pts</b></li>
+                <li>El primero en conseguir la pista: <b>20pts</b></li>
+                <li>Cumplir el reto: <b>100pts</b></li>
+                <li>El primero en terminar el reto: <b>50pts</b></li>
+                <li>Trabajo en equipo: <b>10pts</b></li>
+                <li>Seguir instrucciones: <b>10pts</b></li>
+                <li>Conducta deportiva: <b>10pts</b></li>
+            </ul>
+        </div>
+    </div>
 
     <!-- POPUP DETALLE DE EQUIPO (oculto por defecto, activado por JS al hacer click en una fila) -->
     <div id="popup-equipo" style="display:none;" onclick="this.style.display='none'">

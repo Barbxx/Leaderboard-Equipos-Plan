@@ -228,8 +228,8 @@ body {
 }
 
 .tabla-contenedor {
-    width: 90%;
-    max-width: 960px;
+    width: 85%;
+    max-width: 880px;
     padding: 28px 36px;
     z-index: 2;
     position: relative;
@@ -262,15 +262,15 @@ body {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: clamp(6px, 1vw, 12px);
+    gap: clamp(10px, 1.5vw, 16px);
 }
 
 /* ---- Fila de equipo ---- */
 .fila-equipo {
     display: flex;
     align-items: center;
-    border-radius: 15px;
-    padding: clamp(5px, 1vw, 10px) 10px;
+    border-radius: 18px;
+    padding: clamp(12px, 1.8vw, 18px) 15px;
     color: white;
     font-size: clamp(18px, 2.2vw, 30px);
     -webkit-text-stroke: 1.5px #4a1c5c;
@@ -429,11 +429,11 @@ body {
 /* TV HD (1600px - 1920px) */
 @media (min-width: 1600px) and (max-width: 1919px) {
     #panel-control { width: 400px; }
-    .fila-equipo { font-size: 34px; padding: 12px 14px; }
+    .fila-equipo { font-size: 34px; padding: 18px 20px; border-radius: 24px; }
     .fila-equipo .pos { font-size: 42px; }
     .encabezados { font-size: 54px; -webkit-text-stroke: 4px #013C5F; }
-    #lista-equipos { gap: 14px; }
-    .tabla-contenedor { padding: 36px 50px; max-width: 1000px; }
+    #lista-equipos { gap: 18px; }
+    .tabla-contenedor { padding: 36px 50px; max-width: 950px; }
     /* Barra de pestañas */
     .barra-controles-flotante { top: 20px; right: 20px; }
     .grupo-botones button { font-size: 20px; padding: 10px 20px; }
@@ -448,12 +448,12 @@ body {
 /* TV 4K / muy grande (>= 1920px) */
 @media (min-width: 1920px) {
     #panel-control { width: 460px; font-size: 18px; }
-    .fila-equipo { font-size: 42px; padding: 16px 20px; }
+    .fila-equipo { font-size: 42px; padding: 22px 26px; border-radius: 30px; }
     .fila-equipo .pos { font-size: 52px; }
     .fila-equipo .nom, .fila-equipo .pts { font-size: 42px; }
     .encabezados { font-size: 64px; -webkit-text-stroke: 5px #013C5F; letter-spacing: 3px; }
-    #lista-equipos { gap: 18px; }
-    .tabla-contenedor { padding: 50px 70px; max-width: 1100px; }
+    #lista-equipos { gap: 24px; }
+    .tabla-contenedor { padding: 50px 70px; max-width: 1050px; }
     /* Barra de pestañas */
     .barra-controles-flotante { top: 25px; right: 25px; }
     .grupo-botones button { font-size: 24px; padding: 14px 28px; }
@@ -983,4 +983,139 @@ footer p {
     font-family: 'Lilita One', cursive;
     font-size: 14px;
     letter-spacing: 1px;
+}
+
+/* =============================================
+   MODAL REGLAS DE PUNTOS
+   ============================================= */
+.btn-flotante-info {
+    top: 75px;
+    right: 15px;
+    left: auto;
+    background: rgba(0, 150, 136, 0.7);
+}
+.btn-flotante-info:hover {
+    background: rgba(0, 150, 136, 0.95);
+}
+
+#modal-puntos {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+
+#modal-puntos.modal-oculto {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-contenido {
+    background: linear-gradient(135deg, rgba(10,20,50,0.95), rgba(0,30,80,0.95));
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+    color: white;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#modal-puntos.modal-oculto .modal-contenido {
+    transform: scale(0.8) translateY(20px);
+}
+
+.cerrar-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.cerrar-modal:hover {
+    color: white;
+}
+
+.modal-contenido h2 {
+    font-family: 'Lilita One', cursive;
+    color: #FFD700;
+    font-size: 32px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    -webkit-text-stroke: 2px #013C5F;
+    text-shadow: 2px 2px 0 #013C5F, -1px -1px 0 #013C5F, 1px -1px 0 #013C5F, -1px 1px 0 #013C5F, 4px 4px 0px rgba(0, 0, 0, 0.4);
+    letter-spacing: 2px;
+    paint-order: stroke fill;
+    font-weight: 900;
+}
+
+.modal-contenido ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+}
+
+.modal-contenido li {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed rgba(255,255,255,0.2);
+    padding-bottom: 8px;
+    align-items: center;
+}
+
+.modal-contenido li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.modal-contenido b {
+    color: #FFD700;
+    font-size: 24px;
+    -webkit-text-stroke: none;
+    text-shadow: none;
+}
+
+@media (max-width: 600px) {
+    .modal-contenido { padding: 20px; }
+    .modal-contenido h2 { font-size: 24px; }
+    .modal-contenido ul { font-size: 16px; }
+    .modal-contenido b { font-size: 20px; }
+    .btn-flotante-info { top: 60px; right: 8px; }
+}
+
+@media (min-width: 1600px) {
+    .modal-contenido { max-width: 700px; padding: 40px 60px; border-radius: 30px; }
+    .modal-contenido h2 { font-size: 54px; margin-bottom: 30px; -webkit-text-stroke: 4px #013C5F; }
+    .modal-contenido ul { font-size: 30px; }
+    .modal-contenido b { font-size: 36px; -webkit-text-stroke: none; }
+    .cerrar-modal { font-size: 40px; top: 20px; right: 30px; }
+    .btn-flotante-info { top: 95px; right: 20px; }
+}
+
+@media (min-width: 1920px) {
+    .modal-contenido { max-width: 900px; padding: 50px 80px; }
+    .modal-contenido h2 { font-size: 64px; margin-bottom: 40px; -webkit-text-stroke: 5px #013C5F; }
+    .modal-contenido ul { font-size: 38px; }
+    .modal-contenido b { font-size: 46px; -webkit-text-stroke: none; }
+    .cerrar-modal { font-size: 50px; }
+    .btn-flotante-info { top: 110px; right: 25px; }
 }

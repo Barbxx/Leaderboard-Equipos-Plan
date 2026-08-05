@@ -552,3 +552,24 @@ window.addEventListener('storage', function(e) {
         }
     }
 });
+
+// 11. MODAL REGLAS DE PUNTOS
+window.abrirModalPuntos = function() {
+    const modal = document.getElementById('modal-puntos');
+    if (modal) {
+        modal.style.display = 'flex';
+        // force reflow for animation
+        modal.offsetHeight;
+        modal.classList.remove('modal-oculto');
+    }
+};
+
+window.cerrarModalPuntos = function() {
+    const modal = document.getElementById('modal-puntos');
+    if (modal) {
+        modal.classList.add('modal-oculto');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // Wait for transition
+    }
+};
